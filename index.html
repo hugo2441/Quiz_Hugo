@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dragon Ball Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: url('https://images.alphacoders.com/647/thumb-1920-647552.jpg') no-repeat center/cover;
+            font-family: 'Press Start 2P', cursive;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .container {
+            background: rgba(0, 0, 0, 0.85);
+            border: 4px solid #00aeff;
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 900px;
+            box-shadow: 0 0 30px rgba(0, 204, 255, 0.8), inset 0 0 10px rgba(255, 215, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        h1 {
+            color: #00d9ff;
+            text-shadow: 0 0 10px #05fce7, 0 0 20px #ff9900;
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #ff0000, 0 0 20px #ff5500; }
+            to { text-shadow: 0 0 20px #ffd700, 0 0 30px #ff5500; }
+        }
+
+        .start-screen, .quiz-container, .result-screen {
+            text-align: center;
+        }
+
+        .start-screen img {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto 20px;
+            display: block;
+            filter: drop-shadow(0 0 15px #ffd700);
+        }
+
+        .start-screen input {
+            padding: 15px;
+            width: 80%;
+            max-width: 300px;
+            margin: 10px auto;
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #ff5500;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1em;
+        }
+
+        .start-screen button, .options button, .result-screen button {
+            padding: 15px 30px;
+            margin: 10px;
+            background: linear-gradient(45deg, #ff5500, #ffd700);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .start-screen button:hover, .options button:hover, .result-screen button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #ffd700;
+        }
+
+        .question {
+            font-size: 1.2em;
+            margin: 20px 0;
+            color: #ffd700;
+            text-shadow: 0 0 5px #ff5500;
+        }
+
+        .options button {
+            display: block;
+            width: 80%;
+            max-width: 400px;
+            margin: 15px auto;
+        }
+
+        #scoreboard {
+            margin-top: 20px;
+            font-size: 1em;
+            color: #ffd700;
+            text-shadow: 0 0 5px #ff5500;
+        }
+
+        .result-screen h2 {
+            color: #ffd700;
+            text-shadow: 0 0 10px #ff5500;
+            margin-bottom: 20px;
+        }
+
+        .result-screen p {
+            font-size: 1.2em;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        /* Partículas de fundo */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background: #ffd700;
+            border-radius: 50%;
+            animation: float 5s infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dragon Ball Quiz</h1>
+        
+        <div class="start-screen" id="startScreen">
+            
+            <input type="text" id="playerName" placeholder="Digite seu nome">
+            <button onclick="startQuiz()">Começar Quiz</button>
+        </div>
+
+        <div class="quiz-container" id="quizContainer" style="display: none;">
+            <div class="question" id="question"></div>
+            <div class="options" id="options"></div>
+            <div id="scoreboard">Pontuação: <span id="score">0</span></div>
+        </div>
+
+        <div class="result-screen" id="resultScreen" style="display: none;">
+            <h2>Resultado Final</h2>
+            <p id="finalScore"></p>
+            <button onclick="restartQuiz()">Jogar Novamente</button>
+        </div>
+    </div>
+
+    <div class="particles" id="particles"></div>
+
+    <script>
+        // Quiz Logic
+        const questions = [
+            { question: "Quem é o criador de Dragon Ball?", options: ["Akira Toriyama", "Eiichiro Oda", "Masashi Kishimoto", "Tite Kubo"], answer: "Akira Toriyama" },
+            { question: "Qual é a primeira transformação de Goku?", options: ["Super Saiyajin 2", "Super Saiyajin", "Instinto Superior", "Super Saiyajin God"], answer: "Super Saiyajin" },
+            { question: "Quem matou Freeza pela primeira vez?", options: ["Goku", "Vegeta", "Trunks", "Piccolo"], answer: "Trunks" },
+            { question: "Qual é o planeta natal dos Saiyajins?", options: ["Planeta Terra", "Planeta Namekusei", "Planeta Vegeta", "Planeta Freeza"], answer: "Planeta Vegeta" },
+            { question: "Quem treina Goku no Outro Mundo?", options: ["Sr. Popo", "Kami-Sama", "Senhor Kaiô", "Piccolo"], answer: "Senhor Kaiô" },
+            { question: "Qual é o nome do filho mais velho de Goku?", options: ["Gohan", "Goten", "Trunks", "Bardock"], answer: "Gohan" },
+            { question: "Quem é o irmão de Goku?", options: ["Vegeta", "Cell", "Majin Buu", "Radish"], answer: "Radish" },
+            { question: "Quem ensinou o kamehameha a Goku?", options: ["Mestre Kame", "Whis", "Kami Sama", "Karin"], answer: "Mestre Kame" },
+            { question: "Quem é a esposa de Vegeta?", options: ["Chi-Chi", "Bulma", "Videl", "Android 18"], answer: "Bulma" },
+            { question: "Qual é o nome do Deus da Destruição do universo 7 em Dargon Ball?", options: ["Beerus", "Whis", "Zen'oh", "Champa"], answer: "Beerus" }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let playerName = "";
+
+        function startQuiz() {
+            playerName = document.getElementById("playerName").value;
+            if (!playerName) {
+                alert("Por favor, digite seu nome!");
+                return;
+            }
+            document.getElementById("startScreen").style.display = "none";
+            document.getElementById("quizContainer").style.display = "block";
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById("question").textContent = q.question;
+            const optionsDiv = document.getElementById("options");
+            optionsDiv.innerHTML = "";
+            q.options.forEach(option => {
+                const button = document.createElement("button");
+                button.textContent = option;
+                button.onclick = () => checkAnswer(option);
+                optionsDiv.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selected) {
+            const q = questions[currentQuestion];
+            if (selected === q.answer) score += 10;
+            document.getElementById("score").textContent = score;
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById("quizContainer").style.display = "none";
+            document.getElementById("resultScreen").style.display = "block";
+            document.getElementById("finalScore").textContent = `${playerName}, sua pontuação final é ${score} de ${questions.length * 10}!`;
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            document.getElementById("score").textContent = "0";
+            document.getElementById("resultScreen").style.display = "none";
+            document.getElementById("startScreen").style.display = "block";
+            document.getElementById("playerName").value = "";
+        }
+
+        // Partículas animadas
+        function createParticles() {
+            const particlesDiv = document.getElementById("particles");
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement("div");
+                particle.className = "particle";
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.animationDelay = `${Math.random() * 5}s`;
+                particlesDiv.appendChild(particle);
+            }
+        }
+        createParticles();
+    </script>
+</body>
+</html>
